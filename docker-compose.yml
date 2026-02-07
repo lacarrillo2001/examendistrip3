@@ -1,0 +1,49 @@
+services:
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: seguros
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: polizas
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    environment:
+      MYSQL_URL: jdbc:mysql://mysql:3306/seguros
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      POSTGRES_URL: jdbc:postgresql://postgres:5432/polizas
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql
+      - postgres
+
+  frontend-react:
+    build:
+      context: ./frontend-react
+    environment:
+      REACT_APP_API_BASE: http://localhost:8080/api
+    ports:
+      - "3001:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql-data:
+  postgres-data:
